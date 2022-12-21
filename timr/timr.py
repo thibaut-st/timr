@@ -36,6 +36,13 @@ class Timr:
         :param with_print: Should the messages and times be printed in the terminal
         :param logger: Provide a logger to log the times
         """
+        if not isinstance(precision, float):
+            raise ValueError("The argument `precision` must be a float")
+        if not isinstance(with_print, bool):
+            raise ValueError("The argument `with_print` must be a boolean")
+        if not isinstance(logger, Logger) and logger is not None:
+            raise ValueError("The argument `logger` must be a Logger")
+
         self._precision = precision
         self._with_print = with_print
         self._logger = logger
@@ -47,6 +54,7 @@ class Timr:
         Start a new timer
 
         :param timer_id: A string used as timer id
+        :return: The Timr instance (allow to write timr = Timr().start())
         """
         if timer_id in self._timers:
             raise AlreadySetTimerIdError(f'Timer id "{timer_id}" already exist')
@@ -54,10 +62,10 @@ class Timr:
         self._timers[timer_id] = time.perf_counter()
         message = f'Timer "{timer_id}" - start monitoring'
 
-        if self._logger:
-            self._logger.debug(message)
         if self._with_print:
             print(message)
+        if self._logger:
+            self._logger.debug(message)
 
         return self
 
@@ -65,7 +73,8 @@ class Timr:
         """
         Stop the timer, and report the elapsed time
 
-        :param timer_id: The string provided at instantiation or start() call
+        :param timer_id: The id provided at start(<timer_id>) call
+        :return: The Timr instance
         """
         if timer_id not in self._timers:
             raise NotSetTimerIdError(f"{timer_id} do not exist")
@@ -73,10 +82,10 @@ class Timr:
         elapsed_time = time.perf_counter() - self._timers[timer_id]
         message = f'Timer "{timer_id}" - monitored time: {elapsed_time:{self._precision}f} seconds'
 
-        if self._logger:
-            self._logger.debug(message)
         if self._with_print:
             print(message)
+        if self._logger:
+            self._logger.debug(message)
 
         del self._timers[timer_id]
 
@@ -85,7 +94,9 @@ class Timr:
 
 def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Logger | None = None) -> Decorator:
     """
-    Decorator with parameters matching the Timr class init - Monitor a function or method time execution
+    Decorator factory with parameters matching the Timr class init
+
+     Monitor a function or method time execution (handle both sync and async)
 
     :param precision: The float precision for the timer display (e.g. 0.1 --> x.y seconds, 0.3 --> x.yyy seconds)
     :param with_print: Should the messages and times be printed in the terminal
@@ -95,7 +106,9 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
 
     def decorator(function: DecoratedFunction) -> Wrapper:
         """
-        Decorator - Monitor a function or method time execution
+        Decorator
+
+        Generate the right wrapper depending on the sync/async nature of the function or method
 
         :param function: The function to monitor
         :return: The decorator wrapper
@@ -105,9 +118,9 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             Wrap the async function execution with timers
 
-            :param args: function args
-            :param kwargs: function kwargs
-            :return: function result
+            :param args: Function args
+            :param kwargs: Function kwargs
+            :return: Function result
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
@@ -121,9 +134,9 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             Wrap the function execution with timers
 
-            :param args: function args
-            :param kwargs: function kwargs
-            :return: function result
+            :param args: Function args
+            :param kwargs: Function kwargs
+            :return: Function result
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
