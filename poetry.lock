@@ -123,6 +123,14 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
+name = "callee"
+version = "0.3.1"
+description = "Argument matchers for unittest.mock"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "certifi"
 version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -717,7 +725,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "47b377886b6a4bc90456e1785dba52b34145177e62681137c1279d18e0930e7b"
+content-hash = "66f8b7ed04fa06c80a98ad399ebf66fd13080b08a4a37d3618e248e4e2584f59"
 
 [metadata.files]
 aiohttp = [
@@ -850,6 +858,9 @@ black = [
     {file = "black-22.12.0-cp39-cp39-win_amd64.whl", hash = "sha256:559c7a1ba9a006226f09e4916060982fd27334ae1998e7a38b3f33a37f7a2148"},
     {file = "black-22.12.0-py3-none-any.whl", hash = "sha256:436cc9167dd28040ad90d3b404aec22cedf24a6e4d7de221bec2730ec0c97bcf"},
     {file = "black-22.12.0.tar.gz", hash = "sha256:229351e5a18ca30f447bf724d007f890f97e13af070bb6ad4c0a441cd7596a2f"},
+]
+callee = [
+    {file = "callee-0.3.1.tar.gz", hash = "sha256:056f95d7760c87ce470aa4ab83bab5f9bdf090d4ecf77d52efe9c4559c0aefd3"},
 ]
 certifi = [
     {file = "certifi-2022.12.7-py3-none-any.whl", hash = "sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18"},

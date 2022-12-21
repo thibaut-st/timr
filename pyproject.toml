@@ -14,6 +14,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dependencies]
 python = "^3.11"
 shortuuid = "^1.0.11"
+callee = "*"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^6.5.0"
