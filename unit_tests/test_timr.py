@@ -8,13 +8,16 @@ import asyncio
 from logging import Logger, getLogger
 from time import sleep
 from unittest import TestCase
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from callee import String, Regex
+import callee  # type: ignore
 
 from timr.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
-from timr.timr import Timr, monitor_function
+from timr.timer import Timer, monitor_function
 
+# pylint: disable=protected-access
+# remove mypy line when version 1.0 will be available
+# mypy:  disable-error-code=attr-defined
 LOGGER = getLogger(__name__)
 
 
@@ -27,9 +30,9 @@ class TestTimr(TestCase):
         """
         Test Timr init without args
         """
-        timr = Timr()
+        timr = Timer()
 
-        self.assertIsInstance(timr, Timr)
+        self.assertIsInstance(timr, Timer)
 
         self.assertEqual(0.1, timr._precision)
         self.assertEqual(True, timr._with_print)
@@ -40,7 +43,7 @@ class TestTimr(TestCase):
         """
         Test Timr init with args
         """
-        timr = Timr(0.2, False, LOGGER)
+        timr = Timer(0.2, False, LOGGER)
 
         self.assertEqual(0.2, timr._precision)
         self.assertEqual(False, timr._with_print)
@@ -50,47 +53,47 @@ class TestTimr(TestCase):
         """
         Test Timr init with wrong args
         """
-        self.assertRaises(ValueError, Timr, "test")
-        self.assertRaises(ValueError, Timr, 0.1, "test")
-        self.assertRaises(ValueError, Timr, 0.1, True, "test")
+        self.assertRaises(ValueError, Timer, "test")
+        self.assertRaises(ValueError, Timer, 0.1, "test")
+        self.assertRaises(ValueError, Timer, 0.1, True, "test")
 
     def test_start_without_args(self) -> None:
         """
         Test Timr start without args
         """
-        timr = Timr()
+        timr = Timer()
 
-        self.assertTrue(timr._timer_default_id not in timr._timers.keys())
+        self.assertTrue(timr._timer_default_id not in timr._timers)
 
         timr.start()
 
-        self.assertTrue(timr._timer_default_id in timr._timers.keys())
+        self.assertTrue(timr._timer_default_id in timr._timers)
 
         timr.stop()
 
-        self.assertTrue(timr._timer_default_id not in timr._timers.keys())
+        self.assertTrue(timr._timer_default_id not in timr._timers)
 
     def test_start_with_args(self) -> None:
         """
         Test Timr start with args
         """
-        timr = Timr()
+        timr = Timer()
 
         self.assertTrue(len(timr._timers) == 0)
 
         timr.start("custom_id")
 
-        self.assertTrue("custom_id" in timr._timers.keys())
+        self.assertTrue("custom_id" in timr._timers)
 
         timr.stop("custom_id")
 
-        self.assertTrue("custom_id" not in timr._timers.keys())
+        self.assertTrue("custom_id" not in timr._timers)
 
     def test_start_same_id(self) -> None:
         """
         Test Timr start raise an exception for the same id
         """
-        timr = Timr().start("custom_id")
+        timr = Timer().start("custom_id")
 
         self.assertRaises(AlreadySetTimerIdError, timr.start, "custom_id")
 
@@ -104,7 +107,7 @@ class TestTimr(TestCase):
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        Timr(logger=mock_logger).start()
+        Timer(logger=mock_logger).start()
 
         mock_print.assert_called_with('Timer "default" - start monitoring')
         mock_logger.debug.assert_called_with('Timer "default" - start monitoring')
@@ -119,7 +122,7 @@ class TestTimr(TestCase):
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        Timr(with_print=False).start()
+        Timer(with_print=False).start()
 
         mock_print.assert_not_called()
         mock_logger.debug.assert_not_called()
@@ -132,11 +135,13 @@ class TestTimr(TestCase):
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        timr = Timr(logger=mock_logger).start()
+        timr = Timer(logger=mock_logger).start()
         timr.stop()
 
-        mock_print.assert_called_with(String() & Regex('Timer "default" - monitored time: .* seconds'))
-        mock_logger.debug.assert_called_with(String() & Regex('Timer "default" - monitored time: .* seconds'))
+        mock_print.assert_called_with(callee.String() & callee.Regex('Timer "default" - monitored time: .* seconds'))
+        mock_logger.debug.assert_called_with(
+            callee.String() & callee.Regex('Timer "default" - monitored time: .* seconds')
+        )
 
     @patch("builtins.print")
     def test_stop_print_and_log_not_called(self, mock_print: Mock) -> None:
@@ -146,7 +151,7 @@ class TestTimr(TestCase):
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        timr = Timr(with_print=False).start()
+        timr = Timer(with_print=False).start()
         timr.stop()
 
         mock_print.assert_not_called()
@@ -156,7 +161,7 @@ class TestTimr(TestCase):
         """
         Test Timr stop with the wrong id
         """
-        timr = Timr().start("custom_id")
+        timr = Timer().start("custom_id")
 
         self.assertRaises(NotSetTimerIdError, timr.stop, "wrong_id")
 

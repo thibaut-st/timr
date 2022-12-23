@@ -1,3 +1,5 @@
+# SYSTEM
+
 [tool.poetry]
 name = "timr"
 version = "0.1.0"
@@ -14,9 +16,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dependencies]
 python = "^3.11"
 shortuuid = "^1.0.11"
-callee = "*"
 
 [tool.poetry.group.dev.dependencies]
+callee = "^0.3.1"
 coverage = "^6.5.0"
 black = { extras = ["d"], version = "^22.10.0" }
 isort = "^5.10.1"

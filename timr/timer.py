@@ -7,21 +7,24 @@
 import inspect
 import time
 from logging import Logger
-from typing import Callable, Self, Awaitable, TypeAlias, ParamSpec, TypeVar
+from typing import Awaitable, Callable, ParamSpec, Self, TypeAlias, TypeVar
 
 from shortuuid import uuid
 
 from timr.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
 
+# remove mypy lines when version 1.0 will be available
+# mypy: disable-error-code="valid-type, attr-defined, type-var"
+
 FunctionParameters = ParamSpec("FunctionParameters")
 FunctionReturn = TypeVar("FunctionReturn")
 
-DecoratedFunction: TypeAlias = Callable[FunctionParameters, FunctionReturn | Awaitable[FunctionReturn]]
+DecoratedFunction: TypeAlias = Callable[FunctionParameters, FunctionReturn | Awaitable[FunctionReturn]]  # type: ignore
 Wrapper: TypeAlias = DecoratedFunction
 Decorator: TypeAlias = Callable[[DecoratedFunction], Wrapper]
 
 
-class Timr:
+class Timer:
     """
     Monitor time performance
     """
@@ -124,7 +127,7 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
-            timr = Timr(precision, with_print, logger).start(timer_id)
+            timr = Timer(precision, with_print, logger).start(timer_id)
             result: FunctionReturn = await function(*args, **kwargs)
             timr.stop(timer_id)
 
@@ -140,7 +143,7 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
-            timr = Timr(precision, with_print, logger).start(timer_id)
+            timr = Timer(precision, with_print, logger).start(timer_id)
             result: FunctionReturn = function(*args, **kwargs)
             timr.stop(timer_id)
 
