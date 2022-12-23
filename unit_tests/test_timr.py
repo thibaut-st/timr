@@ -6,7 +6,6 @@
 """
 import asyncio
 from logging import Logger, getLogger
-from time import sleep
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
 
@@ -18,6 +17,7 @@ from timr.timer import Timer, monitor_function
 # pylint: disable=protected-access
 # remove mypy line when version 1.0 will be available
 # mypy:  disable-error-code=attr-defined
+
 LOGGER = getLogger(__name__)
 
 
@@ -165,30 +165,34 @@ class TestTimr(TestCase):
 
         self.assertRaises(NotSetTimerIdError, timr.stop, "wrong_id")
 
-    def test_decorator(self) -> None:
+    @patch("builtins.print")
+    def test_decorator(self, mock_print: Mock) -> None:
         """
-        Test monitor_function
+        Test monitor_function with sync function
         """
 
         @monitor_function(0.3)
-        def test_method(rec: int) -> None:
-            sleep(1)
-            if rec > 0:
-                rec = rec - 1
-                test_method(rec)
+        def test_method(recursive_depth: int) -> None:
+            if recursive_depth > 1:
+                recursive_depth = recursive_depth - 1
+                test_method(recursive_depth)
 
         test_method(5)
 
-    def test_decorator_async(self) -> None:
+        self.assertEqual(10, mock_print.call_count)
+
+    @patch("builtins.print")
+    def test_decorator_async(self, mock_print: Mock) -> None:
         """
-        Test monitor_function
+        Test monitor_function with async function
         """
 
         @monitor_function(0.3)
-        async def test_method(rec: int) -> None:
-            sleep(1)
-            if rec > 0:
-                rec = rec - 1
-                await test_method(rec)
+        async def test_method(recursive_depth: int) -> None:
+            if recursive_depth > 1:
+                recursive_depth = recursive_depth - 1
+                await test_method(recursive_depth)
 
         asyncio.run(test_method(5))
+
+        self.assertEqual(10, mock_print.call_count)

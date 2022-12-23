@@ -149,8 +149,6 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
 
             return result
 
-        if inspect.iscoroutinefunction(function):
-            return async_wrapper
-        return wrapper
+        return async_wrapper if inspect.iscoroutinefunction(function) else wrapper
 
     return decorator
