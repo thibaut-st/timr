@@ -1,11 +1,12 @@
 # SYSTEM
 
 [tool.poetry]
-name = "timr"
+name = "performance-timer"
 version = "0.1.0"
 description = ""
-authors = ["Thibaut Stalin <thibaut.stalin@fime.com>"]
+authors = ["Thibaut Stalin <thibaut.st@gmail.com>"]
 readme = "README.md"
+packages = [{ include = "performance_timer" }]
 
 [build-system]
 requires = ["poetry-core"]

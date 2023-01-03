@@ -1,7 +1,7 @@
 """
-.. module:: timr
+.. module:: test_timr
    :platform: Unix, Windows
-   :synopsis: The module provide the timr tests
+   :synopsis: The module provide the performance_timer tests
 .. moduleauthor:: Thibaut Stalin <thibaut.st@gmail.com>
 """
 import asyncio
@@ -11,8 +11,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import callee  # type: ignore
 
-from timr.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
-from timr.timer import Timer, monitor_function
+from performance_timer.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
+from performance_timer.timer import Timer, monitor_function
 
 # pylint: disable=protected-access
 # remove mypy line when version 1.0 will be available
@@ -21,37 +21,37 @@ from timr.timer import Timer, monitor_function
 LOGGER = getLogger(__name__)
 
 
-class TestTimr(TestCase):
+class TestTimer(TestCase):
     """
-    Test the Timr class
+    Test the Timer class
     """
 
-    def test_timr_init_no_args(self) -> None:
+    def test_timer_init_no_args(self) -> None:
         """
-        Test Timr init without args
+        Test Timer init without args
         """
-        timr = Timer()
+        timer = Timer()
 
-        self.assertIsInstance(timr, Timer)
+        self.assertIsInstance(timer, Timer)
 
-        self.assertEqual(0.1, timr._precision)
-        self.assertEqual(True, timr._with_print)
-        self.assertEqual(None, timr._logger)
-        self.assertEqual({}, timr._timers)
+        self.assertEqual(0.1, timer._precision)
+        self.assertEqual(True, timer._with_print)
+        self.assertEqual(None, timer._logger)
+        self.assertEqual({}, timer._timers)
 
-    def test_timr_init_with_args(self) -> None:
+    def test_timer_init_with_args(self) -> None:
         """
-        Test Timr init with args
+        Test Timer init with args
         """
-        timr = Timer(0.2, False, LOGGER)
+        timer = Timer(0.2, False, LOGGER)
 
-        self.assertEqual(0.2, timr._precision)
-        self.assertEqual(False, timr._with_print)
-        self.assertEqual(LOGGER, timr._logger)
+        self.assertEqual(0.2, timer._precision)
+        self.assertEqual(False, timer._with_print)
+        self.assertEqual(LOGGER, timer._logger)
 
-    def test_timr_init_wrong_args(self) -> None:
+    def test_timer_init_wrong_args(self) -> None:
         """
-        Test Timr init with wrong args
+        Test Timer init with wrong args
         """
         self.assertRaises(ValueError, Timer, "test")
         self.assertRaises(ValueError, Timer, 0.1, "test")
@@ -59,48 +59,48 @@ class TestTimr(TestCase):
 
     def test_start_without_args(self) -> None:
         """
-        Test Timr start without args
+        Test Timer start without args
         """
-        timr = Timer()
+        timer = Timer()
 
-        self.assertTrue(timr._timer_default_id not in timr._timers)
+        self.assertTrue(timer._timer_default_id not in timer._timers)
 
-        timr.start()
+        timer.start()
 
-        self.assertTrue(timr._timer_default_id in timr._timers)
+        self.assertTrue(timer._timer_default_id in timer._timers)
 
-        timr.stop()
+        timer.stop()
 
-        self.assertTrue(timr._timer_default_id not in timr._timers)
+        self.assertTrue(timer._timer_default_id not in timer._timers)
 
     def test_start_with_args(self) -> None:
         """
-        Test Timr start with args
+        Test Timer start with args
         """
-        timr = Timer()
+        timer = Timer()
 
-        self.assertTrue(len(timr._timers) == 0)
+        self.assertTrue(len(timer._timers) == 0)
 
-        timr.start("custom_id")
+        timer.start("custom_id")
 
-        self.assertTrue("custom_id" in timr._timers)
+        self.assertTrue("custom_id" in timer._timers)
 
-        timr.stop("custom_id")
+        timer.stop("custom_id")
 
-        self.assertTrue("custom_id" not in timr._timers)
+        self.assertTrue("custom_id" not in timer._timers)
 
     def test_start_same_id(self) -> None:
         """
-        Test Timr start raise an exception for the same id
+        Test Timer start raise an exception for the same id
         """
-        timr = Timer().start("custom_id")
+        timer = Timer().start("custom_id")
 
-        self.assertRaises(AlreadySetTimerIdError, timr.start, "custom_id")
+        self.assertRaises(AlreadySetTimerIdError, timer.start, "custom_id")
 
     @patch("builtins.print")
     def test_start_print_and_log_called(self, mock_print: Mock) -> None:
         """
-        Test Timr start call print and log
+        Test Timer start call print and log
 
         :param mock_print: print() mock
         """
@@ -115,7 +115,7 @@ class TestTimr(TestCase):
     @patch("builtins.print")
     def test_start_print_and_log_not_called(self, mock_print: Mock) -> None:
         """
-        Test Timr start don't call print and log
+        Test Timer start don't call print and log
 
         :param mock_print: print() mock
         """
@@ -130,13 +130,13 @@ class TestTimr(TestCase):
     @patch("builtins.print")
     def test_stop_print_and_log(self, mock_print: Mock) -> None:
         """
-        Test Timr stop without args
+        Test Timer stop without args
         """
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        timr = Timer(logger=mock_logger).start()
-        timr.stop()
+        timer = Timer(logger=mock_logger).start()
+        timer.stop()
 
         mock_print.assert_called_with(callee.String() & callee.Regex('Timer "default" - monitored time: .* seconds'))
         mock_logger.debug.assert_called_with(
@@ -146,24 +146,24 @@ class TestTimr(TestCase):
     @patch("builtins.print")
     def test_stop_print_and_log_not_called(self, mock_print: Mock) -> None:
         """
-        Test Timr stop without args
+        Test Timer stop without args
         """
         mock_logger = MagicMock(spec=Logger)
         mock_logger.debug = MagicMock()
 
-        timr = Timer(with_print=False).start()
-        timr.stop()
+        timer = Timer(with_print=False).start()
+        timer.stop()
 
         mock_print.assert_not_called()
         mock_logger.debug.assert_not_called()
 
     def test_stop_wrong_id(self) -> None:
         """
-        Test Timr stop with the wrong id
+        Test Timer stop with the wrong id
         """
-        timr = Timer().start("custom_id")
+        timer = Timer().start("custom_id")
 
-        self.assertRaises(NotSetTimerIdError, timr.stop, "wrong_id")
+        self.assertRaises(NotSetTimerIdError, timer.stop, "wrong_id")
 
     @patch("builtins.print")
     def test_decorator(self, mock_print: Mock) -> None:

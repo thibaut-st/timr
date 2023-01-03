@@ -1,4 +1,4 @@
-# Project Timr
+# Project performance_timer
 
 ... project desc ...
 

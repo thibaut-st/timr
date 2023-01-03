@@ -1,7 +1,7 @@
 """
-.. module:: timr
+.. module:: timer
    :platform: Unix, Windows
-   :synopsis: The module provide the Timr class
+   :synopsis: The module provide the Timer class
 .. moduleauthor:: Thibaut Stalin <thibaut.st@gmail.com>
 """
 import inspect
@@ -11,7 +11,7 @@ from typing import Awaitable, Callable, ParamSpec, Self, TypeAlias, TypeVar
 
 from shortuuid import uuid
 
-from timr.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
+from performance_timer.exceptions import AlreadySetTimerIdError, NotSetTimerIdError
 
 # remove mypy lines when version 1.0 will be available
 # mypy: disable-error-code="valid-type, attr-defined, type-var"
@@ -33,7 +33,7 @@ class Timer:
 
     def __init__(self, precision: float = 0.1, with_print: bool = True, logger: Logger | None = None):
         """
-        Initialize a Timr object
+        Initialize a Timer object
 
         :param precision: The float precision for the timer display (e.g. 0.1 --> x.y seconds, 0.3 --> x.yyy seconds)
         :param with_print: Should the messages and times be printed in the terminal
@@ -50,14 +50,15 @@ class Timer:
         self._with_print = with_print
         self._logger = logger
 
+        # dict[str<timer id>, float<timer perf_counter start>]
         self._timers: dict[str, float] = {}
 
     def start(self, timer_id: str = _timer_default_id) -> Self:
         """
         Start a new timer
 
-        :param timer_id: A string used as timer id
-        :return: The Timr instance (allow to write timr = Timr().start())
+        :param timer_id: A string used as timer id (default id is "default")
+        :return: The Timer instance (allow to write timer = Timer().start())
         """
         if timer_id in self._timers:
             raise AlreadySetTimerIdError(f'Timer id "{timer_id}" already exist')
@@ -74,10 +75,10 @@ class Timer:
 
     def stop(self, timer_id: str = _timer_default_id) -> Self:
         """
-        Stop the timer, and report the elapsed time
+        Stop the timer, and report the elapsed time (default id is "default")
 
         :param timer_id: The id provided at start(<timer_id>) call
-        :return: The Timr instance
+        :return: The Timer instance
         """
         if timer_id not in self._timers:
             raise NotSetTimerIdError(f"{timer_id} do not exist")
@@ -97,7 +98,7 @@ class Timer:
 
 def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Logger | None = None) -> Decorator:
     """
-    Decorator factory with parameters matching the Timr class init
+    Decorator factory with parameters matching the Timer class init
 
      Monitor a function or method time execution (handle both sync and async)
 
@@ -127,9 +128,9 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
-            timr = Timer(precision, with_print, logger).start(timer_id)
+            timer = Timer(precision, with_print, logger).start(timer_id)
             result: FunctionReturn = await function(*args, **kwargs)
-            timr.stop(timer_id)
+            timer.stop(timer_id)
 
             return result
 
@@ -143,9 +144,9 @@ def monitor_function(precision: float = 0.1, with_print: bool = True, logger: Lo
             """
             timer_id = f"{function.__name__} - {uuid()}"
 
-            timr = Timer(precision, with_print, logger).start(timer_id)
+            timer = Timer(precision, with_print, logger).start(timer_id)
             result: FunctionReturn = function(*args, **kwargs)
-            timr.stop(timer_id)
+            timer.stop(timer_id)
 
             return result
 
